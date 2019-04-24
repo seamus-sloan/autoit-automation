@@ -1,0 +1,769 @@
+Global $username = "ssloan1"
+Global $password = "Wayne2018"
+Global $cartSpace = "TDJListBox" ; This is used so that the take orders screen can be reactivated
+Global $finishOrderNN = "TVistaPanel3" ;This changes randomly between 3 - 6
+Global $scheduleButtonNN = "TPDJButton2" ;This also changes randomly
+Global $payButtonNN = "TPDJButton5"
+Global $custAcctName = "Automation 2 Jeff Bezos"
+
+Local $loginX = 480
+Local $loginY = 440
+
+Local $hnrTabX = 333
+Local $hnrTabY = 29
+Local $classicPepperoniX = 485
+Local $classicPepperoniY = 636
+
+;NOT USED IN MEXICO
+Local $nonFoodTabX = 782
+Local $nonFoodTabY = 31
+Local $donationX = 418
+Local $donationY = 86
+
+Local $specialsTabX = 28
+Local $specialsTabY = 112
+Local $makeItAMealX = 164
+Local $makeItAMealY = 191
+
+Local $queueTabX = 27
+Local $queueTabY = 225
+Local $queueTopX = 158
+Local $queueTopY = 135
+
+Local $checkX = 583
+Local $checkY = 208
+Local $checkNoKeysX = 582
+Local $checkNoKeysY = 297
+
+Local $moreX = 794
+Local $moreY = 207
+Local $moreNoKeysX = 794
+Local $moreNoKeysY = 297
+
+Local $poX = 853
+Local $poY = 304
+Local $poNoKeysX = 864
+Local $poNoKeysY = 350
+
+Local $custAcctX = 864
+Local $custAcctY = 305
+Local $custAcctNoKeysX = 864
+Local $custAcctNoKeysY = 391
+
+Local $waitForNewProductX = 440
+Local $waitForNewProductY = 601
+
+Local $makeTicketNoneX = 893
+Local $makeTicketNoneY = 445
+
+Local $givenToCustX = 780
+Local $givenToCustY = 445
+
+Local $futureDayX = 595
+Local $futureDayY = 352
+
+Local $futureTimeX = 877
+Local $futureTimeY = 289
+
+Local $fullyCompletedX = 909
+Local $fullyCompletedY = 555
+
+Local $customer1X = 522
+Local $customer1Y = 189
+
+
+
+
+
+HotKeySet("{ESC}", "Terminate")
+Func Terminate()
+   Exit
+EndFunc
+
+
+
+;Functions used for CaesarVision navigation
+Func initLogin()
+   MouseClick("left", $loginX, $loginY)
+   sleep(500)
+   ControlSend("Keyboard Login", "", "TEdit2", $username)
+   sleep(500)
+   ControlSend("Keyboard Login", "", "TEdit1", $password)
+   sleep(500)
+   ControlClick("Keyboard Login", "", "TColorButton2", "left")
+   sleep(2000)
+EndFunc
+Func takeOrders()
+   ControlClick("Caesar Vision Home", "Take Orders", "TPDJButton17", "left")
+   sleep(2000)
+EndFunc
+
+;Functions used for adding items to cart
+Func hnr($i)
+   MouseClick("left", $hnrTabX, $hnrTabY)
+   MouseClick("left",$classicPepperoniX, $classicPepperoniY, $i)
+   sleep(1000)
+EndFunc
+Func special($i)
+   MouseClick("left", $specialsTabX, $specialsTabY)
+   MouseClick("left", $makeItAMealX, $makeItAMealY, $i)
+   sleep(1000)
+EndFunc
+Func donation($i)
+   MouseClick("left", $nonFoodTabX, $nonFoodTabY)
+   MouseClick("left", $donationX, $donationY, $i)
+   sleep(1000)
+EndFunc
+Func createOrder($item1, $item2, $item3)
+   If $item1 > 0 Then hnr($item1)
+   If $item2 > 0 Then special($item2)
+   If $item3 > 0 Then donation($item3)
+EndFunc
+Func waitingOrder($orderQuant, $orderType, $payType, $hnrQuant, $specQuant, $donationQuant)
+   For $i = 1 To $orderQuant Step 1
+	  createOrder($hnrQuant, $specQuant, $donationQuant)
+	  finishOrder()
+	  custName("Wait " & $payType & " " & $orderType & " " & $i)
+
+	  If $payType == 	"cash" 		Then cashPay()
+	  If $payType == 	"check" 	Then checkPay()
+	  If $payType == 	"po" 		Then poPay()
+	  If $payType == 	"gift" 		Then giftPay()
+	  If $payType == 	"custAcct" 	Then custAcctPay("Wait " & $payType & " " & $orderType & " " & $i)
+
+	  waitForNewProduct()
+	  closeSummary()
+	  sleep(1000)
+	  blankSpace()
+   Next
+EndFunc
+Func queueOrder($orderQuant, $orderType, $payType, $hnrQuant, $specQuant, $donationQuant)
+   For $i = 1 To $orderQuant Step 1
+	  createOrder($hnrQuant, $specQuant, $donationQuant)
+	  finishOrder()
+	  custName("Q " & $payType & " " & $orderType & " " & $i)
+
+	  queueButton()
+	  queueNow()
+	  queueButton()
+
+	  makeTicket()
+	  sleep(1000)
+	  blankSpace()
+   Next
+EndFunc
+Func scheduleOrder($orderQuant, $orderType, $payType, $hnrQuant, $specQuant, $donationQuant)
+   For $i = 1 To $orderQuant Step 1
+	  createOrder($hnrQuant, $specQuant, $donationQuant)
+	  finishOrder()
+	  custName("Sched " & $payType & " " & $orderType & " " & $i)
+
+	  scheduleButton()
+	  scheduleToday()
+	  queueButton()
+
+	  makeTicket()
+	  sleep(1000)
+	  blankSpace()
+   Next
+EndFunc
+Func prepaidOrder($orderQuant, $orderType, $payType, $hnrQuant, $specQuant, $donationQuant)
+   For $i = 1 To $orderQuant Step 1
+	  createOrder($hnrQuant, $specQuant, $donationQuant)
+	  finishOrder()
+	  custName("Prepaid " & $payType & " " & $orderType & " " & $i)
+
+	  scheduleButton()
+	  scheduleFuture()
+
+	  If $payType == 	"cash" 		Then cashPay()
+	  If $payType == 	"check" 	Then checkPay()
+	  If $payType == 	"po" 		Then poPay()
+	  If $payType == 	"gift" 		Then giftPay()
+	  If $payType == 	"custacct" 	Then custAcctPay("Prepaid " & $payType & " " & $orderType & " " & $i)
+
+	  fullyCompleted()
+	  managerApproval()
+	  closeSummary()
+	  sleep(1000)
+	  blankSpace()
+   Next
+EndFunc
+
+
+;Functions used for finishing the order
+Func finishOrder()
+   ControlClick("Caesar Vision", "Finish Order", $finishOrderNN, "left")
+   sleep(2000)
+EndFunc
+Func custName($i)
+   ControlClick("Order Payment", "", "TEdit2", "left")
+   ControlSend("Order Payment", "", "TEdit2", $i)
+EndFunc
+Func queueButton()
+   ControlClick("Order Payment", "", "TPDJButton2", "left")
+   sleep(500)
+EndFunc
+Func queueNow()
+   ControlClick("Calendar", "Now", "TColorButton1", "left")
+   sleep(500)
+EndFunc
+Func scheduleButton()
+   ControlClick("Order Payment", "", $scheduleButtonNN , "left")
+   sleep(500)
+EndFunc
+Func scheduleToday()
+   MouseClick("left", $futureTimeX, $futureTimeY)
+   ControlClick("Calendar", "OK", "TColorButton5", "left")
+   sleep(1000)
+EndFunc
+Func scheduleFuture()
+   MouseClick("left", $futureDayX, $futureDayY)
+   MouseClick("left", $futureTimeX, $futureTimeY)
+   sleep(500)
+   ControlClick("Calendar", "OK", "TColorButton5", "left")
+   sleep(1000)
+EndFunc
+Func makeTicket()
+   MouseClick("left", $makeTicketNoneX, $makeTicketNoneY)
+   sleep(1000)
+   cartSpace()
+   sleep(500)
+EndFunc
+
+
+;Functions used to pay for orders
+Func cashPay()
+   ControlClick("Order Payment", "", "TColorButton9", "left")
+   sleep(1000)
+EndFunc
+Func checkPay()
+   MouseClick("left", $checkX, $checkY)
+   ControlSend("Order Payment", "", "TEdit3", "123456789")
+   sleep(1000)
+   payButton("check")
+   managerApproval()
+EndFunc
+Func checkNoKeysPay()
+   MouseClick("left", $checkNoKeysX, $checkNoKeysY)
+   ControlSend("Order Payment", "", "TEdit3", "123456789")
+   sleep(1000)
+   payButton("check")
+   managerApproval()
+EndFunc
+Func poPay()
+   MouseClick("left", $moreX, $moreY)
+   MouseClick("left", $poX, $poY)
+   sleep(500)
+   ControlSend("Order Payment", "", "TEdit3", "123456789")
+   sleep(1000)
+   payButton("po")
+   managerApproval()
+EndFunc
+Func poNoKeysPay()
+   MouseClick("left", $moreNoKeysX, $moreNoKeysY)
+   MouseClick("left", $poNoKeysX, $poNoKeysY)
+   sleep(500)
+   ControlSend("Order Payment", "", "TEdit3", "123456789")
+   sleep(1000)
+   payButton("po")
+   managerApproval()
+EndFunc
+Func giftPay()
+
+EndFunc
+Func custAcctPay($name)
+   ControlClick("Order Payment", "Customer", "TColorButton2", "left")
+   sleep(500)
+   ControlSend("Customer Information", "", "TEdit8", $custAcctName)
+   sleep(500)
+   MouseClick("left", $customer1X, $customer1Y, 4)
+   sleep(500)
+   ControlSetText("Order Payment", $custAcctName, "TEdit2", $name)
+   MouseClick("left", $moreNoKeysX, $moreNoKeysY)
+   MouseClick("left", $custAcctNoKeysX, $custAcctNoKeysY)
+   payButton("custAcct")
+EndFunc
+Func queuePay($num)
+   For $i = 1 To $num Step 1
+	  MouseClick("left", $queueTabX, $queueTabY)
+	  MouseClick("left", $queueTopX, $queueTopY)
+	  sleep(500)
+	  finishOrder()
+
+	  ; Get the name on the order
+	  Local $orderName = ControlGetText("Order Payment", "", "TEdit2")
+	  Local $orderType = getOrderType($orderName)
+
+	  ; Pay depending on order name
+	  Select
+		 Case $orderType = "prepaid"
+			cashPay()
+		 Case $orderType = "check"
+			checkNoKeysPay()
+		 Case $orderType = "po"
+			poNoKeysPay()
+		 Case $orderType = "gift"
+			giftPay()
+		 Case $orderType = "custAcct"
+			custAcctPay($orderName)
+		 Case Else
+			cashPay()
+	  EndSelect
+
+   fullyCompleted()
+   managerApproval()
+   closeSummary()
+
+   ; Scheduled orders require user to verify that the order has been given to the customer
+   Local $_isSched = isScheduled($orderName)
+   if ($_isSched = 1) Then
+	  sleep(500)
+	  queueGiveAway()
+   EndIf
+
+   sleep(1000)
+   Next
+EndFunc
+Func queueGiveAway()
+   MouseClick("left", $givenToCustX, $givenToCustY)
+EndFunc
+
+
+;Functions used for closing out the order
+Func waitForNewProduct()
+   If WinActive("Order Summary") Then
+	  MouseClick("left", $waitForNewProductX, $waitForNewProductY)
+   Else
+	  sleep(500)
+	  waitForNewProduct()
+   EndIf
+   sleep(500)
+EndFunc
+Func closeSummary()
+   ControlClick("Order Summary", "Close", "TColorButton2", "left")
+   sleep(2000)
+EndFunc
+
+
+;Miscellaneous Functions
+Func payButton($payType)
+   ControlClick("Order Payment", "PAY", $payButtonNN, "left")
+   sleep(2000)
+EndFunc
+Func cartSpace()
+   ControlClick("Caesar Vision", "", "TDJListBox13", "left")
+   sleep(500)
+EndFunc
+Func managerApproval()
+   ControlClick("Fingerprint Recognition", "Login", "TColorButton1", "left")
+   sleep(500)
+   ControlSend("Keyboard Login", "", "TEdit2", $username)
+   ControlSend("Keyboard Login", "", "TEdit1", $password)
+   ControlClick("Keyboard Login", "Login", "TColorButton2", "left")
+   sleep(2000)
+EndFunc
+Func getOrderType($name)
+   If StringInStr($name, "prepaid") > 1 Then
+	  Return "cash"
+   EndIf
+   If StringInStr($name, "check") > 1 Then
+	  Return "check"
+   EndIf
+   If StringInStr($name, "po") > 1 Then
+	  Return "po"
+   EndIf
+   If StringInStr($name, "gift") > 1 Then
+	  Return "gift"
+   EndIf
+   If StringInStr($name, "custAcct") > 1 Then
+	  Return "custAcct"
+   EndIf
+EndFunc
+Func isScheduled($name)
+   If StringInStr($name, "sched") > 0 Then
+	  return 1
+   ElseIf StringInStr($name, "prepaid") > 0 Then
+	  return 1
+   Else
+	  return 0
+   EndIf
+EndFunc
+Func fullyCompleted()
+   If WinActive("Order Summary") Then
+	  MouseClick("left", $fullyCompletedX, $fullyCompletedY)
+   Else
+	  sleep(500)
+	  fullyCompleted()
+   EndIf
+   sleep(500)
+EndFunc
+Func blankSpace()
+   ControlClick("CaesarVision", "", "TDJListBox14", "left", 5)
+EndFunc
+Func cashPull()
+   Local $cashPullCount = 1
+   Local $envelopeX = ($cashPullCount * 50) + 465
+   managerApproval()
+   If WinActive("Cash Pull / Safe Deposit") Then
+	  ControlClick("Cash Pull / Safe Deposit", "$1000", "TColorButton19", "left", 2)
+	  ControlClick("Cash Pull / Safe Deposit", "", "TEditAlign1", "left")
+	  If WinActive("Envelope") Then
+		 MouseClick("left", $envelopeX, 180)
+	  Else
+		 Sleep(500)
+		 cashPull()
+		 EndIf
+   Else
+	  Sleep(500)
+	  cashPull()
+   EndIf
+EndFunc
+
+
+
+Func RECOMMENDEDSALES()
+   waitingOrder(4, "hnr", "cash", 1, 0, 0)
+   waitingOrder(4, "spec", "cash", 0, 1, 0)
+   waitingOrder(4, "nontax", "cash", 0, 0, 1)
+   waitingOrder(2, "hnr/spec", "cash", 1, 1, 0)
+   waitingOrder(2, "spec/nontax", "cash", 0, 1, 1)
+   waitingOrder(2, "hnr/nontax", "cash", 1, 0, 1)
+   waitingOrder(2, "all", "cash", 1, 1, 1)
+
+   waitingOrder(4, "hnr", "check", 1, 0, 0)
+   waitingOrder(4, "spec", "check", 0, 1, 0)
+   waitingOrder(4, "nontax", "check", 0, 0, 1)
+   waitingOrder(2, "hnr/spec", "check", 1, 1, 0)
+   waitingOrder(2, "spec/nontax", "check", 0, 1, 1)
+   waitingOrder(2, "hnr/nontax", "check", 1, 0, 1)
+   waitingOrder(2, "all", "check", 1, 1, 1)
+
+   waitingOrder(4, "hnr", "po", 1, 0, 0)
+   waitingOrder(4, "spec", "po", 0, 1, 0)
+   waitingOrder(4, "nontax", "po", 0, 0, 1)
+   waitingOrder(2, "hnr/spec", "po", 1, 1, 0)
+   waitingOrder(2, "spec/nontax", "po", 0, 1, 1)
+   waitingOrder(2, "hnr/nontax", "po", 1, 0, 1)
+   waitingOrder(2, "all", "po", 1, 1, 1)
+
+   ;waitingOrder(4, "hnr", "gift", 1, 0, 0)
+   ;waitingOrder(4, "spec", "gift", 0, 1, 0)
+   ;waitingOrder(4, "nontax", "gift", 0, 0, 1)
+   ;waitingOrder(2, "hnr/spec", "gift", 1, 1, 0)
+   ;waitingOrder(2, "spec/nontax", "gift", 0, 1, 1)
+   ;waitingOrder(2, "hnr/nontax", "gift", 1, 0, 1)
+   ;waitingOrder(2, "all", "gift", 1, 1, 1)
+
+   waitingOrder(4, "hnr", "custAcct", 1, 0, 0)
+   waitingOrder(4, "spec", "custAcct", 0, 1, 0)
+   waitingOrder(4, "nontax", "custAcct", 0, 0, 1)
+   waitingOrder(2, "hnr/spec", "custAcct", 1, 1, 0)
+   waitingOrder(2, "spec/nontax", "custAcct", 0, 1, 1)
+   waitingOrder(2, "hnr/nontax", "custAcct", 1, 0, 1)
+   waitingOrder(2, "all", "custAcct", 1, 1, 1)
+
+   queueOrder(3, "hnr", "cash", 1, 0, 0)
+   queueOrder(3, "spec", "cash", 0, 1, 0)
+   queueOrder(2, "hnr/spec", "cash", 1, 1, 0)
+   queueOrder(2, "spec/nontax", "cash", 0, 1, 1)
+   queueOrder(2, "hnr/nontax", "cash", 1, 0, 1)
+   queueOrder(2, "all", "cash", 1, 1, 1);
+
+   queueOrder(3, "hnr", "check", 1, 0, 0)
+   queueOrder(3, "spec", "check", 0, 1, 0)
+   queueOrder(2, "hnr/spec", "check", 1, 1, 0)
+   queueOrder(2, "spec/nontax", "check", 0, 1, 1)
+   queueOrder(2, "hnr/nontax", "check", 1, 0, 1)
+   queueOrder(2, "all", "check", 1, 1, 1)
+
+   queueOrder(3, "hnr", "po", 1, 0, 0)
+   queueOrder(3, "spec", "po", 0, 1, 0)
+   queueOrder(2, "hnr/spec", "po", 1, 1, 0)
+   queueOrder(2, "spec/nontax", "po", 0, 1, 1)
+   queueOrder(2, "hnr/nontax", "po", 1, 0, 1)
+   queueOrder(2, "all", "po", 1, 1, 1)
+
+   ;queueOrder(3, "hnr", "gift", 1, 0, 0)
+   ;queueOrder(3, "spec", "gift", 0, 1, 0)
+   ;queueOrder(2, "hnr/spec", "gift", 1, 1, 0)
+   ;queueOrder(2, "spec/nontax", "gift", 0, 1, 1)
+   ;queueOrder(2, "hnr/nontax", "gift", 1, 0, 1)
+   ;queueOrder(2, "all", "gift", 1, 1, 1)
+
+   queueOrder(3, "hnr", "custAcct", 1, 0, 0)
+   queueOrder(3, "spec", "custAcct", 0, 1, 0)
+   queueOrder(2, "hnr/spec", "custAcct", 1, 1, 0)
+   queueOrder(2, "spec/nontax", "custAcct", 0, 1, 1)
+   queueOrder(2, "hnr/nontax", "custAcct", 1, 0, 1)
+   queueOrder(2, "all", "custAcct", 1, 1, 1)
+
+   scheduleOrder(3, "hnr", "cash", 1, 0, 0)
+   scheduleOrder(3, "spec", "cash", 0, 1, 0)
+   scheduleOrder(2, "hnr/spec", "cash", 1, 1, 0)
+   scheduleOrder(2, "spec/nontax", "cash", 0, 1, 1)
+   scheduleOrder(2, "hnr/nontax", "cash", 1, 0, 1)
+   scheduleOrder(2, "all", "cash", 1, 1, 1);
+
+   scheduleOrder(3, "hnr", "check", 1, 0, 0)
+   scheduleOrder(3, "spec", "check", 0, 1, 0)
+   scheduleOrder(2, "hnr/spec", "check", 1, 1, 0)
+   scheduleOrder(2, "spec/nontax", "check", 0, 1, 1)
+   scheduleOrder(2, "hnr/nontax", "check", 1, 0, 1)
+   scheduleOrder(2, "all", "check", 1, 1, 1)
+
+   scheduleOrder(3, "hnr", "po", 1, 0, 0)
+   scheduleOrder(3, "spec", "po", 0, 1, 0)
+   scheduleOrder(2, "hnr/spec", "po", 1, 1, 0)
+   scheduleOrder(2, "spec/nontax", "po", 0, 1, 1)
+   scheduleOrder(2, "hnr/nontax", "po", 1, 0, 1)
+   scheduleOrder(2, "all", "po", 1, 1, 1)
+
+   ;scheduleOrder(3, "spec", "gift", 0, 1, 0)
+   ;scheduleOrder(2, "hnr/spec", "gift", 1, 1, 0)
+   ;scheduleOrder(2, "spec/nontax", "gift", 0, 1, 1)
+   ;scheduleOrder(2, "hnr/nontax", "gift", 1, 0, 1)
+   ;scheduleOrder(2, "all", "gift", 1, 1, 1)
+
+   scheduleOrder(3, "spec", "custAcct", 0, 1, 0)
+   scheduleOrder(2, "hnr/spec", "custAcct", 1, 1, 0)
+   scheduleOrder(2, "spec/nontax", "custAcct", 0, 1, 1)
+   scheduleOrder(2, "hnr/nontax", "custAcct", 1, 0, 1)
+   scheduleOrder(2, "all", "custAcct", 1, 1, 1)
+
+   prepaidOrder(3, "hnr", "cash", 1, 0, 0)
+   prepaidOrder(3, "spec", "cash", 0, 1, 0)
+   prepaidOrder(2, "hnr/spec", "cash", 1, 1, 0)
+   prepaidOrder(2, "spec/nontax", "cash", 0, 1, 1)
+   prepaidOrder(2, "hnr/nontax", "cash", 1, 0, 1)
+   prepaidOrder(2, "all", "cash", 1, 1, 1);
+
+   prepaidOrder(3, "hnr", "check", 1, 0, 0)
+   prepaidOrder(3, "spec", "check", 0, 1, 0)
+   prepaidOrder(2, "hnr/spec", "check", 1, 1, 0)
+   prepaidOrder(2, "spec/nontax", "check", 0, 1, 1)
+   prepaidOrder(2, "hnr/nontax", "check", 1, 0, 1)
+   prepaidOrder(2, "all", "check", 1, 1, 1)
+
+   ;prepaidOrder(3, "spec", "gift", 0, 1, 0)
+   ;prepaidOrder(2, "hnr/spec", "gift", 1, 1, 0)
+   ;prepaidOrder(2, "spec/nontax", "gift", 0, 1, 1)
+   ;prepaidOrder(2, "hnr/nontax", "gift", 1, 0, 1)
+   ;prepaidOrder(2, "all", "gift", 1, 1, 1)
+EndFunc
+Func noErrors()
+   If WinExists("Warning") Then
+	  ControlClick("Warning", "OK", "Button1", "left")
+	  sleep(500)
+   ElseIf WinExists("StreamPOS") Then
+	  ControlClick("StreamPOS", "OK", "Button1", "left")
+	  sleep(500)
+   ElseIf WinExists("Fingerprint Recognition") Then
+	  cashPull()
+	  sleep(500)
+   EndIf
+
+   return 1
+EndFunc
+
+; {{ [[ INSTRUCTIONS [waitingOrder()] ]] }}
+;waitingOrder(
+;	[# of Orders], 		<<<< This will be the amount of orders created when this function is called
+;   [Order Type], 		<<<< This is the type of order you have created. Will be mentioned on the order itself
+;   [Payment Method],	<<<< This will be the payment method used to compelte the order (Acceptable input: "cash", "check", "po", "gift", "custAcct")
+;   [# of HNR], 		<<<< This will be the amount of HNR items on the order (Can be 0)
+;   [# of Special], 	<<<< This will be the amount of Special items on the order (Can be 0)
+;   [# of Donation]		<<<< This will be the amount of non-tax items on the order (Can be 0)
+;)
+
+; {{ [[ RECOMMENDED: ]] }}
+;waitingOrder(4, "hnr", "cash", 1, 0, 0)
+;waitingOrder(4, "spec", "cash", 0, 1, 0)
+;waitingOrder(4, "nontax", "cash", 0, 0, 1)
+;waitingOrder(2, "hnr/spec", "cash", 1, 1, 0)
+;waitingOrder(2, "spec/nontax", "cash", 0, 1, 1)
+;waitingOrder(2, "hnr/nontax", "cash", 1, 0, 1)
+;waitingOrder(2, "all", "cash", 1, 1, 1);
+;
+;waitingOrder(4, "hnr", "check", 1, 0, 0)
+;waitingOrder(4, "spec", "check", 0, 1, 0)
+;waitingOrder(4, "nontax", "check", 0, 0, 1)
+;waitingOrder(2, "hnr/spec", "check", 1, 1, 0)
+;waitingOrder(2, "spec/nontax", "check", 0, 1, 1)
+;waitingOrder(2, "hnr/nontax", "check", 1, 0, 1)
+;waitingOrder(2, "all", "check", 1, 1, 1)
+;
+;waitingOrder(4, "hnr", "po", 1, 0, 0)
+;waitingOrder(4, "spec", "po", 0, 1, 0)
+;waitingOrder(4, "nontax", "po", 0, 0, 1)
+;waitingOrder(2, "hnr/spec", "po", 1, 1, 0)
+;waitingOrder(2, "spec/nontax", "po", 0, 1, 1)
+;waitingOrder(2, "hnr/nontax", "po", 1, 0, 1)
+;waitingOrder(2, "all", "po", 1, 1, 1)
+;
+;waitingOrder(4, "hnr", "gift", 1, 0, 0)
+;waitingOrder(4, "spec", "gift", 0, 1, 0)
+;waitingOrder(4, "nontax", "gift", 0, 0, 1)
+;waitingOrder(2, "hnr/spec", "gift", 1, 1, 0)
+;waitingOrder(2, "spec/nontax", "gift", 0, 1, 1)
+;waitingOrder(2, "hnr/nontax", "gift", 1, 0, 1)
+;waitingOrder(2, "all", "gift", 1, 1, 1)
+;
+;waitingOrder(4, "hnr", "custAcct", 1, 0, 0)
+;waitingOrder(4, "spec", "custAcct", 0, 1, 0)
+;waitingOrder(4, "nontax", "custAcct", 0, 0, 1)
+;waitingOrder(2, "hnr/spec", "custAcct", 1, 1, 0)
+;waitingOrder(2, "spec/nontax", "custAcct", 0, 1, 1)
+;waitingOrder(2, "hnr/nontax", "custAcct", 1, 0, 1)
+;waitingOrder(2, "all", "custAcct", 1, 1, 1)
+
+
+
+; {{ [[ INSTRUCTIONS [queueOrder()] ]] }}
+;queueOrder(
+;	[# of Orders], 		<<<< This will be the amount of orders created when this function is called
+;   [Order Type], 		<<<< This is the type of order you have created. Will be mentioned on the order itself
+;   [Payment Method],	<<<< This will be the payment method used to compelte the order (Acceptable input: "cash", "check", "po", "gift", "custAcct")
+;   [# of HNR], 		<<<< This will be the amount of HNR items on the order (Can be 0)
+;   [# of Special], 	<<<< This will be the amount of Special items on the order (Can be 0)
+;   [# of Donation]		<<<< This will be the amount of non-tax items on the order (Can be 0)
+;)
+
+; {{ [[ RECOMMENDED: ]] }}
+;queueOrder(3, "hnr", "cash", 1, 0, 0)
+;queueOrder(3, "spec", "cash", 0, 1, 0)
+;queueOrder(2, "hnr/spec", "cash", 1, 1, 0)
+;queueOrder(2, "spec/nontax", "cash", 0, 1, 1)
+;queueOrder(2, "hnr/nontax", "cash", 1, 0, 1)
+;queueOrder(2, "all", "cash", 1, 1, 1);
+;
+;queueOrder(3, "hnr", "check", 1, 0, 0)
+;queueOrder(3, "spec", "check", 0, 1, 0)
+;queueOrder(2, "hnr/spec", "check", 1, 1, 0)
+;queueOrder(2, "spec/nontax", "check", 0, 1, 1)
+;queueOrder(2, "hnr/nontax", "check", 1, 0, 1)
+;queueOrder(2, "all", "check", 1, 1, 1)
+;
+;queueOrder(3, "hnr", "po", 1, 0, 0)
+;queueOrder(3, "spec", "po", 0, 1, 0)
+;queueOrder(2, "hnr/spec", "po", 1, 1, 0)
+;queueOrder(2, "spec/nontax", "po", 0, 1, 1)
+;queueOrder(2, "hnr/nontax", "po", 1, 0, 1)
+;queueOrder(2, "all", "po", 1, 1, 1)
+;
+;queueOrder(3, "hnr", "gift", 1, 0, 0)
+;queueOrder(3, "spec", "gift", 0, 1, 0)
+;queueOrder(2, "hnr/spec", "gift", 1, 1, 0)
+;queueOrder(2, "spec/nontax", "gift", 0, 1, 1)
+;queueOrder(2, "hnr/nontax", "gift", 1, 0, 1)
+;queueOrder(2, "all", "gift", 1, 1, 1)
+;
+;queueOrder(3, "hnr", "custAcct", 1, 0, 0)
+;queueOrder(3, "spec", "custAcct", 0, 1, 0)
+;queueOrder(2, "hnr/spec", "custAcct", 1, 1, 0)
+;queueOrder(2, "spec/nontax", "custAcct", 0, 1, 1)
+;queueOrder(2, "hnr/nontax", "custAcct", 1, 0, 1)
+;queueOrder(2, "all", "custAcct", 1, 1, 1)
+
+
+
+; {{ [[ INSTRUCTIONS [scheduledOrder()] ]] }}
+;scheduledOrder(
+;	[# of Orders], 		<<<< This will be the amount of orders created when this function is called
+;   [Order Type], 		<<<< This is the type of order you have created. Will be mentioned on the order itself
+;   [Payment Method],	<<<< This will be the payment method used to compelte the order (Acceptable input: "cash", "check", "po", "gift", "custAcct")
+;   [# of HNR], 		<<<< This will be the amount of HNR items on the order (Can be 0)
+;   [# of Special], 	<<<< This will be the amount of Special items on the order (Can be 0)
+;   [# of Donation]		<<<< This will be the amount of non-tax items on the order (Can be 0)
+;)
+
+; {{ [[ RECOMMENDED: ]] }}
+;scheduleOrder(3, "hnr", "cash", 1, 0, 0)
+;scheduleOrder(3, "spec", "cash", 0, 1, 0)
+;scheduleOrder(2, "hnr/spec", "cash", 1, 1, 0)
+;scheduleOrder(2, "spec/nontax", "cash", 0, 1, 1)
+;scheduleOrder(2, "hnr/nontax", "cash", 1, 0, 1)
+;scheduleOrder(2, "all", "cash", 1, 1, 1);
+;
+;scheduleOrder(3, "hnr", "check", 1, 0, 0)
+;scheduleOrder(3, "spec", "check", 0, 1, 0)
+;scheduleOrder(2, "hnr/spec", "check", 1, 1, 0)
+;scheduleOrder(2, "spec/nontax", "check", 0, 1, 1)
+;scheduleOrder(2, "hnr/nontax", "check", 1, 0, 1)
+;scheduleOrder(2, "all", "check", 1, 1, 1)
+;
+;scheduleOrder(3, "hnr", "po", 1, 0, 0)
+;scheduleOrder(2, "hnr/spec", "po", 1, 1, 0)
+;scheduleOrder(2, "spec/nontax", "po", 0, 1, 1)
+;scheduleOrder(2, "hnr/nontax", "po", 1, 0, 1)
+;scheduleOrder(2, "all", "po", 1, 1, 1)
+;
+;scheduleOrder(3, "spec", "gift", 0, 1, 0)
+;scheduleOrder(2, "hnr/spec", "gift", 1, 1, 0)
+;scheduleOrder(2, "spec/nontax", "gift", 0, 1, 1)
+;scheduleOrder(2, "hnr/nontax", "gift", 1, 0, 1)
+;scheduleOrder(2, "all", "gift", 1, 1, 1)
+;
+;scheduleOrder(3, "spec", "custAcct", 0, 1, 0)
+;scheduleOrder(3, "nontax", "custAcct", 0, 0, 1)
+;scheduleOrder(2, "hnr/spec", "custAcct", 1, 1, 0)
+;scheduleOrder(2, "spec/nontax", "custAcct", 0, 1, 1)
+;scheduleOrder(2, "hnr/nontax", "custAcct", 1, 0, 1)
+;scheduleOrder(2, "all", "custAcct", 1, 1, 1)
+
+
+
+; {{ [[ INSTRUCTIONS [prepaidOrder()] ]] }}
+;prepaidOrder(
+;	[# of Orders], 		<<<< This will be the amount of orders created when this function is called
+;   [Order Type], 		<<<< This is the type of order you have created. Will be mentioned on the order itself
+;   [Payment Method],	<<<< This will be the payment method used to compelte the order (Acceptable input: "cash", "check", "po", "gift", "custAcct")
+;   [# of HNR], 		<<<< This will be the amount of HNR items on the order (Can be 0)
+;   [# of Special], 	<<<< This will be the amount of Special items on the order (Can be 0)
+;   [# of Donation]		<<<< This will be the amount of non-tax items on the order (Can be 0)
+;)
+
+; {{ [[ RECOMMENDED: ]] }}
+;prepaidOrder(3, "hnr", "cash", 1, 0, 0)
+;prepaidOrder(3, "spec", "cash", 0, 1, 0)
+;prepaidOrder(2, "hnr/spec", "cash", 1, 1, 0)
+;prepaidOrder(2, "spec/nontax", "cash", 0, 1, 1)
+;prepaidOrder(2, "hnr/nontax", "cash", 1, 0, 1)
+;prepaidOrder(2, "all", "cash", 1, 1, 1);
+;
+;prepaidOrder(3, "hnr", "check", 1, 0, 0)
+;prepaidOrder(3, "spec", "check", 0, 1, 0)
+;prepaidOrder(2, "hnr/spec", "check", 1, 1, 0)
+;prepaidOrder(2, "spec/nontax", "check", 0, 1, 1)
+;prepaidOrder(2, "hnr/nontax", "check", 1, 0, 1)
+;prepaidOrder(2, "all", "check", 1, 1, 1)
+;
+;prepaidOrder(3, "hnr", "po", 1, 0, 0)
+;prepaidOrder(3, "spec", "po", 0, 1, 0)
+;prepaidOrder(2, "hnr/spec", "po", 1, 1, 0)
+;prepaidOrder(2, "spec/nontax", "po", 0, 1, 1)
+;prepaidOrder(2, "hnr/nontax", "po", 1, 0, 1)
+;prepaidOrder(2, "all", "po", 1, 1, 1)
+;
+;prepaidOrder(3, "spec", "gift", 0, 1, 0)
+;prepaidOrder(2, "hnr/spec", "gift", 1, 1, 0)
+;prepaidOrder(2, "spec/nontax", "gift", 0, 1, 1)
+;prepaidOrder(2, "hnr/nontax", "gift", 1, 0, 1)
+;prepaidOrder(2, "all", "gift", 1, 1, 1)
+
+
+
+
+
+
+
+
+
+
+
+;Automation Start:
+While noErrors()
+   queuePay(1)
+WEnd
+
+
