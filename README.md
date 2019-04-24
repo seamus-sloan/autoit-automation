@@ -27,6 +27,11 @@ For more tips on how to create orders and use the provided functions, there is a
 
 
 
+
+
+
+
+
  {{ [[ INSTRUCTIONS [waitingOrder()] ]] }}
 waitingOrder(
 	[# of Orders], 		<<<< This will be the amount of orders created when this function is called
