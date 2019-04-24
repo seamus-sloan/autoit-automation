@@ -1,6 +1,3 @@
-# sales-automation
-CaesarVision sales automation:
-
 # Description:
 This script is designed to be run using the AutoIt script editor. The design is flexible and allows the user to create their own custom orders. These orders have the option to be HNR items, non-tax items, or special items all at the users' discretion.
 
