@@ -28,7 +28,7 @@ For more tips on how to create orders and use the provided functions, there is a
 
 
 
-
+```
  {{ [[ INSTRUCTIONS [waitingOrder()] ]] }}
 waitingOrder(
 	[# of Orders], 		<<<< This will be the amount of orders created when this function is called
@@ -203,3 +203,4 @@ prepaidOrder(2, "hnr/spec", "gift", 1, 1, 0)
 prepaidOrder(2, "spec/nontax", "gift", 0, 1, 1)
 prepaidOrder(2, "hnr/nontax", "gift", 1, 0, 1)
 prepaidOrder(2, "all", "gift", 1, 1, 1)
+```
